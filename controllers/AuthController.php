@@ -32,6 +32,8 @@ class AuthController {
             'id' => $user['auth_id'],
             'employee_id' => $user['employee_id'],
             'email' => $user['username'],
+            'first_name' => $user['first_name'],
+            'last_name' => $user['last_name'],
             'is_admin' => $user['is_admin'],
             'iat' => time(),
             'exp' => time() + (15 * 24 * 60 * 60) // 15 days
@@ -47,8 +49,8 @@ class AuthController {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $_SESSION['message'] = "Method not allowed";
             $_SESSION['success'] = false;
-            header('Location: /login');
-            return;
+            header('Location: /attendance_tracker/login');
+            exit;
         }
 
         try {
@@ -59,8 +61,8 @@ class AuthController {
             if (!$email || !$password) {
                 $_SESSION['message'] = "Email and password are required.";
                 $_SESSION['success'] = false;
-                header('Location: /login');
-                return;
+                header('Location: /attendance_tracker/login');
+                exit;
             }
 
             // Check if account is locked in session
@@ -68,8 +70,8 @@ class AuthController {
                 $secondsLeft = $_SESSION['locked_until'] - time();
                 $_SESSION['message'] = "Account locked. Try again in {$secondsLeft} seconds.";
                 $_SESSION['success'] = false;
-                header('Location: /login');
-                return;
+                header('Location: /attendance_tracker/login');
+                exit;
             }
 
             $stmt = $this->db->query(
@@ -85,8 +87,8 @@ class AuthController {
                 $this->handleFailedLogin($email);
                 $_SESSION['message'] = "Invalid credentials.";
                 $_SESSION['success'] = false;
-                header('Location: /login');
-                return;
+                header('Location: /attendance_tracker/login');
+                exit;
             }
 
             // Check if account is locked in database
@@ -94,8 +96,8 @@ class AuthController {
                 $minutesLeft = ceil((strtotime($user['lock_until']) - time()) / 60);
                 $_SESSION['message'] = "Account locked. Try again in {$minutesLeft} minutes.";
                 $_SESSION['success'] = false;
-                header('Location: /login');
-                return;
+                header('Location: /attendance_tracker/login');
+                exit;
             }
 
             $isMatch = $this->hashPassword->compare($password, $user['password']);
@@ -103,8 +105,8 @@ class AuthController {
                 $this->handleFailedLogin($email, $user);
                 $_SESSION['message'] = "Invalid email or password.";
                 $_SESSION['success'] = false;
-                header('Location: /login');
-                return;
+                header('Location: /attendance_tracker/login');
+                exit;
             }
 
             // Reset failed attempts on successful login
@@ -137,13 +139,15 @@ class AuthController {
 
             $_SESSION['message'] = "Login successful!";
             $_SESSION['success'] = true;
-            header('Location: /dashboard');
+            header('Location: /attendance_tracker/dashboard');
+            exit;
             
         } catch (Exception $err) {
             error_log("Login Error: " . $err->getMessage());
             $_SESSION['message'] = "Login failed. Please try again.";
             $_SESSION['success'] = false;
-            header('Location: /login');
+            header('Location: /attendance_tracker/login');
+            exit;
         }
     }
 
@@ -174,8 +178,8 @@ class AuthController {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $_SESSION['message'] = "Method not allowed";
             $_SESSION['success'] = false;
-            header('Location: /register');
-            return;
+            header('Location: /attendance_tracker/register');
+            exit;
         }
 
         $connection = $this->db->getConnection();
@@ -193,15 +197,15 @@ class AuthController {
             if (!$email || !$password || !$first_name || !$last_name || !$address) {
                 $_SESSION['message'] = "All required fields must be provided.";
                 $_SESSION['success'] = false;
-                header('Location: /register');
-                return;
+                header('Location: /attendance_tracker/register');
+                exit;
             }
 
             if (!$this->isStrongPassword($password)) {
                 $_SESSION['message'] = "Password must include uppercase, lowercase, number, and special character.";
                 $_SESSION['success'] = false;
-                header('Location: /register');
-                return;
+                header('Location: /attendance_tracker/register');
+                exit;
             }
 
             $connection->beginTransaction();
@@ -213,8 +217,8 @@ class AuthController {
                 $connection->rollBack();
                 $_SESSION['message'] = "Employee with this email already exists.";
                 $_SESSION['success'] = false;
-                header('Location: /register');
-                return;
+                header('Location: /attendance_tracker/register');
+                exit;
             }
 
             $stmt = $connection->prepare("SELECT auth_id FROM account_auth WHERE username = ?");
@@ -223,8 +227,8 @@ class AuthController {
                 $connection->rollBack();
                 $_SESSION['message'] = "User already exists.";
                 $_SESSION['success'] = false;
-                header('Location: /register');
-                return;
+                header('Location: /attendance_tracker/register');
+                exit;
             }
 
             // Generate South African ID
@@ -250,7 +254,8 @@ class AuthController {
 
             $_SESSION['message'] = "User registered successfully.";
             $_SESSION['success'] = true;
-            header('Location: /login');
+            header('Location: /attendance_tracker/login');
+            exit;
 
         } catch (Exception $err) {
             if ($connection->inTransaction()) {
@@ -259,7 +264,8 @@ class AuthController {
             error_log("Signup Error: " . $err->getMessage());
             $_SESSION['message'] = "Registration failed. Please try again.";
             $_SESSION['success'] = false;
-            header('Location: /register');
+            header('Location: /attendance_tracker/register');
+            exit;
         }
     }
 
@@ -270,8 +276,8 @@ class AuthController {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $_SESSION['message'] = "Method not allowed";
             $_SESSION['success'] = false;
-            header('Location: /forgot-password');
-            return;
+            header('Location: /attendance_tracker/forgot-password');
+            exit;
         }
 
         try {
@@ -281,8 +287,8 @@ class AuthController {
             if (!$email) {
                 $_SESSION['message'] = "Email is required.";
                 $_SESSION['success'] = false;
-                header('Location: /forgot-password');
-                return;
+                header('Location: /attendance_tracker/forgot-password');
+                exit;
             }
 
             $stmt = $this->db->query(
@@ -298,8 +304,8 @@ class AuthController {
             if (!$user) {
                 $_SESSION['message'] = "If that email exists, a reset link was sent.";
                 $_SESSION['success'] = true;
-                header('Location: /forgot-password');
-                return;
+                header('Location: /attendance_tracker/forgot-password');
+                exit;
             }
 
             // Generate secure reset token
@@ -350,13 +356,15 @@ class AuthController {
 
             $_SESSION['message'] = "Password reset link sent to {$targetEmail}.";
             $_SESSION['success'] = true;
-            header('Location: /forgot-password');
+            header('Location: /attendance_tracker/forgot-password');
+            exit;
 
         } catch (Exception $err) {
             error_log("Forgot Password Error: " . $err->getMessage());
             $_SESSION['message'] = "Failed to send reset link. Please try again.";
             $_SESSION['success'] = false;
-            header('Location: /forgot-password');
+            header('Location: /attendance_tracker/forgot-password');
+            exit;
         }
     }
 
@@ -367,8 +375,8 @@ class AuthController {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $_SESSION['message'] = "Method not allowed";
             $_SESSION['success'] = false;
-            header('Location: /reset-password');
-            return;
+            header('Location: /attendance_tracker/reset-password');
+            exit;
         }
 
         try {
@@ -380,22 +388,22 @@ class AuthController {
             if (!$email || !$token || !$newPassword || !$confirmPassword) {
                 $_SESSION['message'] = "All fields are required.";
                 $_SESSION['success'] = false;
-                header('Location: /reset-password?token=' . urlencode($token) . '&email=' . urlencode($email));
-                return;
+                header('Location: /attendance_tracker/reset-password?token=' . urlencode($token) . '&email=' . urlencode($email));
+                exit;
             }
 
             if ($newPassword !== $confirmPassword) {
                 $_SESSION['message'] = "Passwords do not match.";
                 $_SESSION['success'] = false;
-                header('Location: /reset-password?token=' . urlencode($token) . '&email=' . urlencode($email));
-                return;
+                header('Location: /attendance_tracker/reset-password?token=' . urlencode($token) . '&email=' . urlencode($email));
+                exit;
             }
 
             if (!$this->isStrongPassword($newPassword)) {
                 $_SESSION['message'] = "Password must meet strength requirements.";
                 $_SESSION['success'] = false;
-                header('Location: /reset-password?token=' . urlencode($token) . '&email=' . urlencode($email));
-                return;
+                header('Location: /attendance_tracker/reset-password?token=' . urlencode($token) . '&email=' . urlencode($email));
+                exit;
             }
 
             $stmt = $this->db->query(
@@ -410,8 +418,8 @@ class AuthController {
             if (!$user) {
                 $_SESSION['message'] = "Invalid or expired reset link.";
                 $_SESSION['success'] = false;
-                header('Location: /reset-password?token=' . urlencode($token) . '&email=' . urlencode($email));
-                return;
+                header('Location: /attendance_tracker/reset-password?token=' . urlencode($token) . '&email=' . urlencode($email));
+                exit;
             }
 
             $tokenHash = hash('sha256', $token);
@@ -422,8 +430,8 @@ class AuthController {
                 strtotime($user['reset_expires']) < time()) {
                 $_SESSION['message'] = "Invalid or expired reset token.";
                 $_SESSION['success'] = false;
-                header('Location: /reset-password?token=' . urlencode($token) . '&email=' . urlencode($email));
-                return;
+                header('Location: /attendance_tracker/reset-password?token=' . urlencode($token) . '&email=' . urlencode($email));
+                exit;
             }
 
             $hashedPassword = $this->hashPassword->hash($newPassword);
@@ -435,13 +443,15 @@ class AuthController {
 
             $_SESSION['message'] = "Password reset successful.";
             $_SESSION['success'] = true;
-            header('Location: /login');
+            header('Location: /attendance_tracker/login');
+            exit;
 
         } catch (Exception $err) {
             error_log("Reset Password Error: " . $err->getMessage());
             $_SESSION['message'] = "Failed to reset password. Please try again.";
             $_SESSION['success'] = false;
-            header('Location: /reset-password?token=' . urlencode($token) . '&email=' . urlencode($email));
+            header('Location: /attendance_tracker/reset-password?token=' . urlencode($token) . '&email=' . urlencode($email));
+            exit;
         }
     }
 
@@ -547,7 +557,7 @@ class AuthController {
         // Clear remember token cookie
         setcookie('remember_token', '', time() - 3600, '/');
         
-        header('Location: /');
+        header('Location: /attendance_tracker/');
         exit;
     }
 

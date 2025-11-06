@@ -46,4 +46,4 @@ if (isset($_SESSION['user'])) {
     </div>
 </div>
 
-<?php require_once 'layouts/footer.php'; ?>
+<?php require_once __DIR__ . '/../layouts/footer.php'; ?>

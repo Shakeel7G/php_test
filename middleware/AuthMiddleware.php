@@ -59,11 +59,13 @@ class AuthMiddleware {
                 exit;
             }
 
-            // Set user in session for subsequent requests
+            // Set user in session for subsequent requests - FIXED SESSION DATA
             $_SESSION['user'] = [
-                'id' => $decoded['id'],
+                'auth_id' => $decoded['id'],
                 'employee_id' => $decoded['employee_id'],
                 'email' => $decoded['email'],
+                'first_name' => $decoded['first_name'] ?? '',
+                'last_name' => $decoded['last_name'] ?? '',
                 'is_admin' => $decoded['is_admin']
             ];
             $_SESSION['logged_in'] = true;

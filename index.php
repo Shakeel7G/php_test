@@ -1,4 +1,11 @@
 <?php
+// ============================================
+// ENABLE ERROR REPORTING - ADD THIS AT TOP
+// ============================================
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 // Use absolute paths with __DIR__
 require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/config/env.php';
@@ -66,31 +73,71 @@ if (isset($routes[$path])) {
     
     // Apply middleware if specified
     if (isset($route['middleware'])) {
-        call_user_func($route['middleware']);
+        try {
+            call_user_func($route['middleware']);
+        } catch (Exception $e) {
+            error_log("Middleware error: " . $e->getMessage());
+            http_response_code(500);
+            echo "Middleware Error: " . $e->getMessage();
+            exit;
+        }
     }
     
     // Handle controller routes
     if (isset($route['controller'])) {
-        list($controller, $method) = explode('@', $route['controller']);
-        require_once __DIR__ . '/controllers/' . $controller . '.php';
-        $controllerInstance = new $controller();
-        $controllerInstance->$method();
+        try {
+            list($controller, $method) = explode('@', $route['controller']);
+            $controllerPath = __DIR__ . '/controllers/' . $controller . '.php';
+            
+            if (!file_exists($controllerPath)) {
+                throw new Exception("Controller file not found: " . $controllerPath);
+            }
+            
+            require_once $controllerPath;
+            
+            if (!class_exists($controller)) {
+                throw new Exception("Controller class not found: " . $controller);
+            }
+            
+            $controllerInstance = new $controller();
+            
+            if (!method_exists($controllerInstance, $method)) {
+                throw new Exception("Method not found: " . $controller . "->" . $method);
+            }
+            
+            $controllerInstance->$method();
+        } catch (Exception $e) {
+            error_log("Controller error: " . $e->getMessage());
+            http_response_code(500);
+            echo "Controller Error: " . $e->getMessage();
+            exit;
+        }
     } 
     // Handle view routes
     elseif (isset($route['view'])) {
-        // Additional protection for views
-        if (strpos($path, '/dashboard') === 0 && !AuthMiddleware::checkAuth()) {
-            header('Location: /attendance_tracker/login');
-            exit;
-        }
+        $isAuthPage = in_array($path, ['/', '/login', '/register', '/forgot-password', '/reset-password']);
+        $isProtectedPage = strpos($path, '/dashboard') === 0;
         
-        // Redirect authenticated users away from auth pages
-        if (in_array($path, ['/', '/login', '/register']) && AuthMiddleware::checkAuth()) {
+        // Redirect logged-in users away from auth pages
+        if ($isAuthPage && AuthMiddleware::checkAuth()) {
             header('Location: /attendance_tracker/dashboard');
             exit;
         }
         
-        require_once __DIR__ . '/' . $route['view'];
+        // Redirect non-logged-in users away from protected pages
+        if ($isProtectedPage && !AuthMiddleware::checkAuth()) {
+            header('Location: /attendance_tracker/login');
+            exit;
+        }
+        
+        $viewPath = __DIR__ . '/' . $route['view'];
+        if (!file_exists($viewPath)) {
+            http_response_code(404);
+            echo "View not found: " . $viewPath;
+            exit;
+        }
+        
+        require_once $viewPath;
     }
 } else {
     http_response_code(404);
