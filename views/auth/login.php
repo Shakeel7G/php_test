@@ -9,6 +9,13 @@ if (isset($_SESSION['user'])) {
 }
 ?>
 
+<style>
+    .form-card{
+        width:100%;
+        max-width:400px;
+    }
+</style>
+
 <div class="login-wrapper">
     <!-- LEFT SIDE -->
     <section class="login-left">
@@ -46,7 +53,7 @@ if (isset($_SESSION['user'])) {
                     value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>" />
 
                 <label for="password" class="form-label">Password</label>
-                <div class="password-wrapper">
+                <div class="password-field">
                     <input type="password" id="password" name="password" required 
                         class="form-input" placeholder="Enter your password" />
                     <span class="toggle-password" onclick="togglePasswordVisibility()">

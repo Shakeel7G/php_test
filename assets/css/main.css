@@ -2,7 +2,7 @@
 :root {
   --header-bg: #06c3a7; 
   --button-text: #ffffff;
-  --bg-color: #ebfffd;
+  --bg-color: #defffc;
   --panel-bg: #ffffff;
   --text-color: #064e44;
   --subtext-color: #4b6b66;
@@ -313,7 +313,7 @@ textarea.form-input {
   transform: translateY(-50%) scale(1.1);
 }
 
-.eye {
+/* .eye {
   position: absolute;
   right: 10px;
   top: 45%;
@@ -321,7 +321,7 @@ textarea.form-input {
   background: transparent;
   border: none;
   cursor: pointer;
-}
+} */
 
 /* Password Strength */
 .warning {

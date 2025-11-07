@@ -9,6 +9,22 @@ if (isset($_SESSION['user'])) {
 }
 ?>
 
+<style>
+    .forgot-container{
+         background: linear-gradient(180deg, rgba(6, 195, 167, 0.15) 0%, rgba(6, 195, 167, 0.05) 100%);
+    }
+
+
+    input[type="email"] {
+        width: 100%;
+        padding: 12px 15px;
+        margin: 8px 0 16px 0;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+</style>
+
 <div class="forgot-container">
     <!-- Left Image -->
     <div class="image">
