@@ -20,6 +20,129 @@ if (!$token || !$email) {
 }
 ?>
 
+<style>
+    .reset-container {
+        background: linear-gradient(180deg, rgba(6, 195, 167, 0.15) 0%, rgba(6, 195, 167, 0.05) 100%);
+    }
+
+    .password-field {
+        position: relative;
+        width: 100%;
+        margin: 8px 0 16px 0;
+    }
+
+    .password-field input {
+        width: 100%;
+        padding: 12px 15px;
+        padding-right: 45px;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        background: white;
+        margin: 0;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        line-height: 1.5;
+    }
+
+    /* Force same styling for both password and text types */
+    .password-field input[type="password"],
+    .password-field input[type="text"] {
+        font-family: 'Inter', sans-serif !important;
+        font-size: 14px !important;
+        padding: 12px 15px !important;
+        padding-right: 45px !important;
+        border: 1px solid #ccc !important;
+        border-radius: 4px !important;
+        background: white !important;
+        line-height: 1.5 !important;
+        height: auto !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Focus states for both types */
+    .password-field input[type="password"]:focus,
+    .password-field input[type="text"]:focus {
+        outline: none;
+        border-color: #06c3a7;
+        box-shadow: 0 0 0 2px rgba(6, 195, 167, 0.1);
+    }
+
+    .eye {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        margin: 0;
+        height: 20px;
+        width: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+    }
+
+    .eye:hover {
+        opacity: 0.7;
+    }
+
+    .strength {
+        width: 100%;
+        height: 4px;
+        background: #e0e0e0;
+        border-radius: 2px;
+        margin: 8px 0;
+        overflow: hidden;
+    }
+
+    .strength-bar {
+        height: 100%;
+        width: 0%;
+        transition: all 0.3s ease;
+        border-radius: 2px;
+    }
+
+    .strength-label {
+        display: block;
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 16px;
+    }
+
+    .password-hints {
+        list-style: none;
+        padding: 0;
+        margin: 8px 0 16px 0;
+        font-size: 12px;
+    }
+
+    .password-hints li {
+        margin: 4px 0;
+        color: #666;
+        transition: color 0.3s ease;
+    }
+
+    .password-hints li.valid {
+        color: #00C853;
+    }
+
+    .warning {
+        color: #FF4D4D;
+        font-size: 12px;
+        display: block;
+        margin-top: -8px;
+        margin-bottom: 8px;
+    }
+</style>
+
 <div class="reset-container">
     <!-- Illustration -->
     <div class="illustration">
@@ -67,7 +190,15 @@ if (!$token || !$email) {
                 <li id="hintLength">8–15 characters long</li>
             </ul>
 
-            <input id="confirmPassword" name="confirmPassword" type="password" placeholder="Confirm password" maxlength="15" required />
+            <div class="password-field">
+                <input id="confirmPassword" name="confirmPassword" type="password" placeholder="Confirm password" maxlength="15" required />
+                <button type="button" class="eye" onclick="togglePasswordVisibility('confirmPassword')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" stroke="var(--accent-color)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                        <circle cx="12" cy="12" r="3" stroke="var(--accent-color)" stroke-width="1.5" />
+                    </svg>
+                </button>
+            </div>
 
             <button type="submit" class="primary" onclick="return validateForm()">
                 Reset Password
@@ -82,6 +213,14 @@ if (!$token || !$email) {
 function togglePasswordVisibility(fieldId) {
     const passwordInput = document.getElementById(fieldId);
     const eyeButton = passwordInput.parentNode.querySelector('.eye');
+    
+    // Prevent default button behavior
+    event.preventDefault();
+    
+    // Store current value and selection
+    const currentValue = passwordInput.value;
+    const currentSelectionStart = passwordInput.selectionStart;
+    const currentSelectionEnd = passwordInput.selectionEnd;
     
     if (passwordInput.type === 'password') {
         passwordInput.type = 'text';
@@ -100,6 +239,22 @@ function togglePasswordVisibility(fieldId) {
             </svg>
         `;
     }
+    
+    // Restore value and selection
+    passwordInput.value = currentValue;
+    passwordInput.setSelectionRange(currentSelectionStart, currentSelectionEnd);
+    
+    // Force re-application of styles
+    passwordInput.style.fontFamily = 'Inter, sans-serif';
+    passwordInput.style.fontSize = '14px';
+    passwordInput.style.padding = '12px 15px';
+    passwordInput.style.paddingRight = '45px';
+    passwordInput.style.border = '1px solid #ccc';
+    passwordInput.style.borderRadius = '4px';
+    passwordInput.style.background = 'white';
+    passwordInput.style.lineHeight = '1.5';
+    passwordInput.style.width = '100%';
+    passwordInput.style.boxSizing = 'border-box';
 }
 
 function updatePasswordHints() {
